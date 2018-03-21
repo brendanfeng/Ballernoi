@@ -1,0 +1,26 @@
+{
+  "name": "Ballernoi",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brendanfeng/Ballernoi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brendanfeng/Ballernoi/issues"
+  },
+  "homepage": "https://github.com/brendanfeng/Ballernoi#readme",
+  "dependencies": {
+    "d3": "^4.13.0",
+    "webpack": "^4.2.0",
+    "webpack-cli": "^2.0.12"
+  }
+}
