@@ -36,6 +36,7 @@ My app will use these technologies:
 
 1. JavaScript for clickable/draggable elements
 2. D3 to calculate Voronoi diagrams + coverage circles and render them
+3. Webpack to bundle JS files
 
 Besides the main entry file, there will be three main scripts for my project:
 
