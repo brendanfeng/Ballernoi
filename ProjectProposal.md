@@ -29,7 +29,7 @@ The dot selected will be a different color, and will be draggable across the scr
 There will be a time slider that will show the size of the circle based on distance
 covered - you will be able to slide between 1000 milliseconds to 2000 milliseconds.
 
-![Wireframe](./assets/wireframe.png)
+![Wireframe](Ballernoi/assets/Wireframe.png)
 
 ## Technologies
 My app will use these technologies:
