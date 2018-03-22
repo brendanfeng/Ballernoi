@@ -1,0 +1,6 @@
+canvas {
+  background-image: url('court_small.png');
+  background-color: rgba(247, 188, 136, 0.3);
+  background-repeat: no-repeat;
+  background-position: bottom;
+}

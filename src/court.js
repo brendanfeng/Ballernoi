@@ -10,9 +10,13 @@ export default class Court {
     this.width = canvas.width;
     this.height = canvas.height;
 
-    this.positions = d3.range(5).map( (p) => {
-      return [Math.random() * this.width, Math.random() * this.height];
-    });
+    this.positions = [
+      [0.35 * this.width, 0.5 * this.height],
+      [0.65 * this.width, 0.5 * this.height],
+      [0.2 * this.width, 0.8 * this.height],
+      [0.5 * this.width, 0.8 * this.height],
+      [0.8 * this.width, 0.8 * this.height]
+    ];
 
     // this.players = this.positions.map( (pos) => {
     //   return new Player(pos); }
@@ -39,14 +43,14 @@ export default class Court {
 
     this.context.beginPath();
     for (let i = 0, n = polygons.length; i < n; ++i) this.drawPoly(polygons[i]);
-      this.context.strokeStyle = "#000";
+      this.context.strokeStyle = "#F60";
       this.context.stroke();
 
     this.context.beginPath();
     for (let i = 0, n = this.positions.length; i < n; ++i) this.drawPos(this.positions[i]);
       this.context.fillStyle = "#000";
       this.context.fill();
-      this.context.strokeStyle = "#fff";
+      this.context.strokeStyle = "#000";
       this.context.stroke();
   }
 
