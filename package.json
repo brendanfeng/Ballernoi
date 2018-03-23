@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/brendanfeng/Ballernoi#readme",
   "dependencies": {
-    "d3": "^4.13.0",
+    "d3": "^5.0.0",
     "webpack": "^4.2.0",
     "webpack-cli": "^2.0.12"
   }
