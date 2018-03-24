@@ -10,3 +10,8 @@ export const vDiagram = (court) => {
   const voronoiDiagram = voronoi(positions);
   return voronoiDiagram;
 };
+
+export const overlapPlayer = (mousePos, player) => {
+  const distance = Math.sqrt(((player.y - mousePos.y) ** 2) + ((player.x - mousePos.x) ** 2));
+  return distance < 8
+}

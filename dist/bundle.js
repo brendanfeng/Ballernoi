@@ -10284,6 +10284,34 @@ function transformRotate(rotate) {
   });
 }
 
+function scaleTranslate(k, dx, dy) {
+  function transform(x, y) {
+    return [dx + k * x, dy - k * y];
+  }
+  transform.invert = function(x, y) {
+    return [(x - dx) / k, (dy - y) / k];
+  };
+  return transform;
+}
+
+function scaleTranslateRotate(k, dx, dy, alpha) {
+  var cosAlpha = Object(_math__WEBPACK_IMPORTED_MODULE_5__["cos"])(alpha),
+      sinAlpha = Object(_math__WEBPACK_IMPORTED_MODULE_5__["sin"])(alpha),
+      a = cosAlpha * k,
+      b = sinAlpha * k,
+      ai = cosAlpha / k,
+      bi = sinAlpha / k,
+      ci = (sinAlpha * dy - cosAlpha * dx) / k,
+      fi = (sinAlpha * dx + cosAlpha * dy) / k;
+  function transform(x, y) {
+    return [a * x - b * y + dx, dy - b * x - a * y];
+  }
+  transform.invert = function(x, y) {
+    return [ai * x - bi * y + ci, fi - bi * x - ai * y];
+  };
+  return transform;
+}
+
 function projection(project) {
   return projectionMutator(function() { return project; })();
 }
@@ -10292,26 +10320,25 @@ function projectionMutator(projectAt) {
   var project,
       k = 150, // scale
       x = 480, y = 250, // translate
-      dx, dy, lambda = 0, phi = 0, // center
-      deltaLambda = 0, deltaPhi = 0, deltaGamma = 0, rotate, projectRotate, // rotate
-      theta = null, preclip = _clip_antimeridian__WEBPACK_IMPORTED_MODULE_0__["default"], // clip angle
-      x0 = null, y0, x1, y1, postclip = _identity__WEBPACK_IMPORTED_MODULE_4__["default"], // clip extent
-      delta2 = 0.5, projectResample = Object(_resample__WEBPACK_IMPORTED_MODULE_9__["default"])(projectTransform, delta2), // precision
+      lambda = 0, phi = 0, // center
+      deltaLambda = 0, deltaPhi = 0, deltaGamma = 0, rotate, // pre-rotate
+      alpha = 0, // post-rotate
+      theta = null, preclip = _clip_antimeridian__WEBPACK_IMPORTED_MODULE_0__["default"], // pre-clip angle
+      x0 = null, y0, x1, y1, postclip = _identity__WEBPACK_IMPORTED_MODULE_4__["default"], // post-clip extent
+      delta2 = 0.5, // precision
+      projectResample,
+      projectTransform,
+      projectRotateTransform,
       cache,
       cacheStream;
 
   function projection(point) {
-    point = projectRotate(point[0] * _math__WEBPACK_IMPORTED_MODULE_5__["radians"], point[1] * _math__WEBPACK_IMPORTED_MODULE_5__["radians"]);
-    return [point[0] * k + dx, dy - point[1] * k];
+    return projectRotateTransform(point[0] * _math__WEBPACK_IMPORTED_MODULE_5__["radians"], point[1] * _math__WEBPACK_IMPORTED_MODULE_5__["radians"]);
   }
 
   function invert(point) {
-    point = projectRotate.invert((point[0] - dx) / k, (dy - point[1]) / k);
+    point = projectRotateTransform.invert(point[0], point[1]);
     return point && [point[0] * _math__WEBPACK_IMPORTED_MODULE_5__["degrees"], point[1] * _math__WEBPACK_IMPORTED_MODULE_5__["degrees"]];
-  }
-
-  function projectTransform(x, y) {
-    return x = project(x, y), [x[0] * k + dx, dy - x[1] * k];
   }
 
   projection.stream = function(stream) {
@@ -10350,6 +10377,10 @@ function projectionMutator(projectAt) {
     return arguments.length ? (deltaLambda = _[0] % 360 * _math__WEBPACK_IMPORTED_MODULE_5__["radians"], deltaPhi = _[1] % 360 * _math__WEBPACK_IMPORTED_MODULE_5__["radians"], deltaGamma = _.length > 2 ? _[2] % 360 * _math__WEBPACK_IMPORTED_MODULE_5__["radians"] : 0, recenter()) : [deltaLambda * _math__WEBPACK_IMPORTED_MODULE_5__["degrees"], deltaPhi * _math__WEBPACK_IMPORTED_MODULE_5__["degrees"], deltaGamma * _math__WEBPACK_IMPORTED_MODULE_5__["degrees"]];
   };
 
+  projection.angle = function(_) {
+    return arguments.length ? (alpha = _ % 360 * _math__WEBPACK_IMPORTED_MODULE_5__["radians"], recenter()) : alpha * _math__WEBPACK_IMPORTED_MODULE_5__["degrees"];
+  };
+
   projection.precision = function(_) {
     return arguments.length ? (projectResample = Object(_resample__WEBPACK_IMPORTED_MODULE_9__["default"])(projectTransform, delta2 = _ * _), reset()) : Object(_math__WEBPACK_IMPORTED_MODULE_5__["sqrt"])(delta2);
   };
@@ -10371,10 +10402,12 @@ function projectionMutator(projectAt) {
   };
 
   function recenter() {
-    projectRotate = Object(_compose__WEBPACK_IMPORTED_MODULE_3__["default"])(rotate = Object(_rotation__WEBPACK_IMPORTED_MODULE_6__["rotateRadians"])(deltaLambda, deltaPhi, deltaGamma), project);
-    var center = project(lambda, phi);
-    dx = x - center[0] * k;
-    dy = y + center[1] * k;
+    var center = scaleTranslateRotate(k, 0, 0, alpha).apply(null, project(lambda, phi)),
+        transform = (alpha ? scaleTranslateRotate : scaleTranslate)(k, x - center[0], y - center[1], alpha);
+    rotate = Object(_rotation__WEBPACK_IMPORTED_MODULE_6__["rotateRadians"])(deltaLambda, deltaPhi, deltaGamma);
+    projectTransform = Object(_compose__WEBPACK_IMPORTED_MODULE_3__["default"])(project, transform);
+    projectRotateTransform = Object(_compose__WEBPACK_IMPORTED_MODULE_3__["default"])(rotate, projectTransform);
+    projectResample = Object(_resample__WEBPACK_IMPORTED_MODULE_9__["default"])(projectTransform, delta2);
     return reset();
   }
 
@@ -27101,7 +27134,7 @@ var dependencies = {"d3-array":"1","d3-axis":"1","d3-brush":"1","d3-chord":"1","
 /*!**********************************!*\
   !*** ./node_modules/d3/index.js ***!
   \**********************************/
-/*! exports provided: version, bisect, bisectRight, bisectLeft, ascending, bisector, cross, descending, deviation, extent, histogram, thresholdFreedmanDiaconis, thresholdScott, thresholdSturges, max, mean, median, merge, min, pairs, permute, quantile, range, scan, shuffle, sum, ticks, tickIncrement, tickStep, transpose, variance, zip, axisTop, axisRight, axisBottom, axisLeft, brush, brushX, brushY, brushSelection, chord, ribbon, nest, set, map, keys, values, entries, color, rgb, hsl, lab, hcl, cubehelix, dispatch, drag, dragDisable, dragEnable, dsvFormat, csvParse, csvParseRows, csvFormat, csvFormatRows, tsvParse, tsvParseRows, tsvFormat, tsvFormatRows, easeLinear, easeQuad, easeQuadIn, easeQuadOut, easeQuadInOut, easeCubic, easeCubicIn, easeCubicOut, easeCubicInOut, easePoly, easePolyIn, easePolyOut, easePolyInOut, easeSin, easeSinIn, easeSinOut, easeSinInOut, easeExp, easeExpIn, easeExpOut, easeExpInOut, easeCircle, easeCircleIn, easeCircleOut, easeCircleInOut, easeBounce, easeBounceIn, easeBounceOut, easeBounceInOut, easeBack, easeBackIn, easeBackOut, easeBackInOut, easeElastic, easeElasticIn, easeElasticOut, easeElasticInOut, forceCenter, forceCollide, forceLink, forceManyBody, forceRadial, forceSimulation, forceX, forceY, formatDefaultLocale, format, formatPrefix, formatLocale, formatSpecifier, precisionFixed, precisionPrefix, precisionRound, cluster, hierarchy, pack, packSiblings, packEnclose, partition, stratify, tree, treemap, treemapBinary, treemapDice, treemapSlice, treemapSliceDice, treemapSquarify, treemapResquarify, interpolate, interpolateArray, interpolateBasis, interpolateBasisClosed, interpolateDate, interpolateNumber, interpolateObject, interpolateRound, interpolateString, interpolateTransformCss, interpolateTransformSvg, interpolateZoom, interpolateRgb, interpolateRgbBasis, interpolateRgbBasisClosed, interpolateHsl, interpolateHslLong, interpolateLab, interpolateHcl, interpolateHclLong, interpolateCubehelix, interpolateCubehelixLong, quantize, path, polygonArea, polygonCentroid, polygonHull, polygonContains, polygonLength, quadtree, randomUniform, randomNormal, randomLogNormal, randomBates, randomIrwinHall, randomExponential, create, creator, local, matcher, mouse, namespace, namespaces, clientPoint, select, selectAll, selection, selector, selectorAll, style, touch, touches, window, event, customEvent, arc, area, line, pie, areaRadial, radialArea, lineRadial, radialLine, pointRadial, linkHorizontal, linkVertical, linkRadial, symbol, symbols, symbolCircle, symbolCross, symbolDiamond, symbolSquare, symbolStar, symbolTriangle, symbolWye, curveBasisClosed, curveBasisOpen, curveBasis, curveBundle, curveCardinalClosed, curveCardinalOpen, curveCardinal, curveCatmullRomClosed, curveCatmullRomOpen, curveCatmullRom, curveLinearClosed, curveLinear, curveMonotoneX, curveMonotoneY, curveNatural, curveStep, curveStepAfter, curveStepBefore, stack, stackOffsetExpand, stackOffsetDiverging, stackOffsetNone, stackOffsetSilhouette, stackOffsetWiggle, stackOrderAscending, stackOrderDescending, stackOrderInsideOut, stackOrderNone, stackOrderReverse, timeInterval, timeMillisecond, timeMilliseconds, utcMillisecond, utcMilliseconds, timeSecond, timeSeconds, utcSecond, utcSeconds, timeMinute, timeMinutes, timeHour, timeHours, timeDay, timeDays, timeWeek, timeWeeks, timeSunday, timeSundays, timeMonday, timeMondays, timeTuesday, timeTuesdays, timeWednesday, timeWednesdays, timeThursday, timeThursdays, timeFriday, timeFridays, timeSaturday, timeSaturdays, timeMonth, timeMonths, timeYear, timeYears, utcMinute, utcMinutes, utcHour, utcHours, utcDay, utcDays, utcWeek, utcWeeks, utcSunday, utcSundays, utcMonday, utcMondays, utcTuesday, utcTuesdays, utcWednesday, utcWednesdays, utcThursday, utcThursdays, utcFriday, utcFridays, utcSaturday, utcSaturdays, utcMonth, utcMonths, utcYear, utcYears, timeFormatDefaultLocale, timeFormat, timeParse, utcFormat, utcParse, timeFormatLocale, isoFormat, isoParse, now, timer, timerFlush, timeout, interval, transition, active, interrupt, voronoi, zoom, zoomTransform, zoomIdentity, contours, contourDensity, blob, buffer, dsv, csv, tsv, image, json, text, xml, html, svg, geoArea, geoBounds, geoCentroid, geoCircle, geoClipAntimeridian, geoClipCircle, geoClipExtent, geoClipRectangle, geoContains, geoDistance, geoGraticule, geoGraticule10, geoInterpolate, geoLength, geoPath, geoAlbers, geoAlbersUsa, geoAzimuthalEqualArea, geoAzimuthalEqualAreaRaw, geoAzimuthalEquidistant, geoAzimuthalEquidistantRaw, geoConicConformal, geoConicConformalRaw, geoConicEqualArea, geoConicEqualAreaRaw, geoConicEquidistant, geoConicEquidistantRaw, geoEquirectangular, geoEquirectangularRaw, geoGnomonic, geoGnomonicRaw, geoIdentity, geoProjection, geoProjectionMutator, geoMercator, geoMercatorRaw, geoNaturalEarth1, geoNaturalEarth1Raw, geoOrthographic, geoOrthographicRaw, geoStereographic, geoStereographicRaw, geoTransverseMercator, geoTransverseMercatorRaw, geoRotation, geoStream, geoTransform, scaleBand, scalePoint, scaleIdentity, scaleLinear, scaleLog, scaleOrdinal, scaleImplicit, scalePow, scaleSqrt, scaleQuantile, scaleQuantize, scaleThreshold, scaleTime, scaleUtc, scaleSequential, schemeCategory10, schemeAccent, schemeDark2, schemePaired, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3, interpolateBrBG, schemeBrBG, interpolatePRGn, schemePRGn, interpolatePiYG, schemePiYG, interpolatePuOr, schemePuOr, interpolateRdBu, schemeRdBu, interpolateRdGy, schemeRdGy, interpolateRdYlBu, schemeRdYlBu, interpolateRdYlGn, schemeRdYlGn, interpolateSpectral, schemeSpectral, interpolateBuGn, schemeBuGn, interpolateBuPu, schemeBuPu, interpolateGnBu, schemeGnBu, interpolateOrRd, schemeOrRd, interpolatePuBuGn, schemePuBuGn, interpolatePuBu, schemePuBu, interpolatePuRd, schemePuRd, interpolateRdPu, schemeRdPu, interpolateYlGnBu, schemeYlGnBu, interpolateYlGn, schemeYlGn, interpolateYlOrBr, schemeYlOrBr, interpolateYlOrRd, schemeYlOrRd, interpolateBlues, schemeBlues, interpolateGreens, schemeGreens, interpolateGreys, schemeGreys, interpolatePurples, schemePurples, interpolateReds, schemeReds, interpolateOranges, schemeOranges, interpolateCubehelixDefault, interpolateRainbow, interpolateWarm, interpolateCool, interpolateViridis, interpolateMagma, interpolateInferno, interpolatePlasma */
+/*! exports provided: version, bisect, bisectRight, bisectLeft, ascending, bisector, cross, descending, deviation, extent, histogram, thresholdFreedmanDiaconis, thresholdScott, thresholdSturges, max, mean, median, merge, min, pairs, permute, quantile, range, scan, shuffle, sum, ticks, tickIncrement, tickStep, transpose, variance, zip, axisTop, axisRight, axisBottom, axisLeft, brush, brushX, brushY, brushSelection, chord, ribbon, nest, set, map, keys, values, entries, color, rgb, hsl, lab, hcl, cubehelix, contours, contourDensity, dispatch, drag, dragDisable, dragEnable, dsvFormat, csvParse, csvParseRows, csvFormat, csvFormatRows, tsvParse, tsvParseRows, tsvFormat, tsvFormatRows, easeLinear, easeQuad, easeQuadIn, easeQuadOut, easeQuadInOut, easeCubic, easeCubicIn, easeCubicOut, easeCubicInOut, easePoly, easePolyIn, easePolyOut, easePolyInOut, easeSin, easeSinIn, easeSinOut, easeSinInOut, easeExp, easeExpIn, easeExpOut, easeExpInOut, easeCircle, easeCircleIn, easeCircleOut, easeCircleInOut, easeBounce, easeBounceIn, easeBounceOut, easeBounceInOut, easeBack, easeBackIn, easeBackOut, easeBackInOut, easeElastic, easeElasticIn, easeElasticOut, easeElasticInOut, blob, buffer, dsv, csv, tsv, image, json, text, xml, html, svg, forceCenter, forceCollide, forceLink, forceManyBody, forceRadial, forceSimulation, forceX, forceY, formatDefaultLocale, format, formatPrefix, formatLocale, formatSpecifier, precisionFixed, precisionPrefix, precisionRound, geoArea, geoBounds, geoCentroid, geoCircle, geoClipAntimeridian, geoClipCircle, geoClipExtent, geoClipRectangle, geoContains, geoDistance, geoGraticule, geoGraticule10, geoInterpolate, geoLength, geoPath, geoAlbers, geoAlbersUsa, geoAzimuthalEqualArea, geoAzimuthalEqualAreaRaw, geoAzimuthalEquidistant, geoAzimuthalEquidistantRaw, geoConicConformal, geoConicConformalRaw, geoConicEqualArea, geoConicEqualAreaRaw, geoConicEquidistant, geoConicEquidistantRaw, geoEquirectangular, geoEquirectangularRaw, geoGnomonic, geoGnomonicRaw, geoIdentity, geoProjection, geoProjectionMutator, geoMercator, geoMercatorRaw, geoNaturalEarth1, geoNaturalEarth1Raw, geoOrthographic, geoOrthographicRaw, geoStereographic, geoStereographicRaw, geoTransverseMercator, geoTransverseMercatorRaw, geoRotation, geoStream, geoTransform, cluster, hierarchy, pack, packSiblings, packEnclose, partition, stratify, tree, treemap, treemapBinary, treemapDice, treemapSlice, treemapSliceDice, treemapSquarify, treemapResquarify, interpolate, interpolateArray, interpolateBasis, interpolateBasisClosed, interpolateDate, interpolateNumber, interpolateObject, interpolateRound, interpolateString, interpolateTransformCss, interpolateTransformSvg, interpolateZoom, interpolateRgb, interpolateRgbBasis, interpolateRgbBasisClosed, interpolateHsl, interpolateHslLong, interpolateLab, interpolateHcl, interpolateHclLong, interpolateCubehelix, interpolateCubehelixLong, quantize, path, polygonArea, polygonCentroid, polygonHull, polygonContains, polygonLength, quadtree, randomUniform, randomNormal, randomLogNormal, randomBates, randomIrwinHall, randomExponential, scaleBand, scalePoint, scaleIdentity, scaleLinear, scaleLog, scaleOrdinal, scaleImplicit, scalePow, scaleSqrt, scaleQuantile, scaleQuantize, scaleThreshold, scaleTime, scaleUtc, scaleSequential, schemeCategory10, schemeAccent, schemeDark2, schemePaired, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3, interpolateBrBG, schemeBrBG, interpolatePRGn, schemePRGn, interpolatePiYG, schemePiYG, interpolatePuOr, schemePuOr, interpolateRdBu, schemeRdBu, interpolateRdGy, schemeRdGy, interpolateRdYlBu, schemeRdYlBu, interpolateRdYlGn, schemeRdYlGn, interpolateSpectral, schemeSpectral, interpolateBuGn, schemeBuGn, interpolateBuPu, schemeBuPu, interpolateGnBu, schemeGnBu, interpolateOrRd, schemeOrRd, interpolatePuBuGn, schemePuBuGn, interpolatePuBu, schemePuBu, interpolatePuRd, schemePuRd, interpolateRdPu, schemeRdPu, interpolateYlGnBu, schemeYlGnBu, interpolateYlGn, schemeYlGn, interpolateYlOrBr, schemeYlOrBr, interpolateYlOrRd, schemeYlOrRd, interpolateBlues, schemeBlues, interpolateGreens, schemeGreens, interpolateGreys, schemeGreys, interpolatePurples, schemePurples, interpolateReds, schemeReds, interpolateOranges, schemeOranges, interpolateCubehelixDefault, interpolateRainbow, interpolateWarm, interpolateCool, interpolateViridis, interpolateMagma, interpolateInferno, interpolatePlasma, create, creator, local, matcher, mouse, namespace, namespaces, clientPoint, select, selectAll, selection, selector, selectorAll, style, touch, touches, window, event, customEvent, arc, area, line, pie, areaRadial, radialArea, lineRadial, radialLine, pointRadial, linkHorizontal, linkVertical, linkRadial, symbol, symbols, symbolCircle, symbolCross, symbolDiamond, symbolSquare, symbolStar, symbolTriangle, symbolWye, curveBasisClosed, curveBasisOpen, curveBasis, curveBundle, curveCardinalClosed, curveCardinalOpen, curveCardinal, curveCatmullRomClosed, curveCatmullRomOpen, curveCatmullRom, curveLinearClosed, curveLinear, curveMonotoneX, curveMonotoneY, curveNatural, curveStep, curveStepAfter, curveStepBefore, stack, stackOffsetExpand, stackOffsetDiverging, stackOffsetNone, stackOffsetSilhouette, stackOffsetWiggle, stackOrderAscending, stackOrderDescending, stackOrderInsideOut, stackOrderNone, stackOrderReverse, timeInterval, timeMillisecond, timeMilliseconds, utcMillisecond, utcMilliseconds, timeSecond, timeSeconds, utcSecond, utcSeconds, timeMinute, timeMinutes, timeHour, timeHours, timeDay, timeDays, timeWeek, timeWeeks, timeSunday, timeSundays, timeMonday, timeMondays, timeTuesday, timeTuesdays, timeWednesday, timeWednesdays, timeThursday, timeThursdays, timeFriday, timeFridays, timeSaturday, timeSaturdays, timeMonth, timeMonths, timeYear, timeYears, utcMinute, utcMinutes, utcHour, utcHours, utcDay, utcDays, utcWeek, utcWeeks, utcSunday, utcSundays, utcMonday, utcMondays, utcTuesday, utcTuesdays, utcWednesday, utcWednesdays, utcThursday, utcThursdays, utcFriday, utcFridays, utcSaturday, utcSaturdays, utcMonth, utcMonths, utcYear, utcYears, timeFormatDefaultLocale, timeFormat, timeParse, utcFormat, utcParse, timeFormatLocale, isoFormat, isoParse, now, timer, timerFlush, timeout, interval, transition, active, interrupt, voronoi, zoom, zoomTransform, zoomIdentity */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -28131,8 +28164,15 @@ const canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("#container")
 
 const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
 
+court.addClickable(canvas);
 court.addDraggable(canvas);
 court.draw();
+
+// d3.select(".player-speed")
+// add event listener to menu that called updateSpeed;
+
+// d3.select(".coverage-time")
+// add event listenter to menu that edits court.time;
 
 
 /***/ }),
@@ -28141,13 +28181,14 @@ court.draw();
 /*!*********************!*\
   !*** ./src/calc.js ***!
   \*********************/
-/*! exports provided: calcPxDistance, vDiagram */
+/*! exports provided: calcPxDistance, vDiagram, overlapPlayer */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calcPxDistance", function() { return calcPxDistance; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "vDiagram", function() { return vDiagram; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "overlapPlayer", function() { return overlapPlayer; });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 
 
@@ -28161,6 +28202,11 @@ const vDiagram = (court) => {
   const voronoiDiagram = voronoi(positions);
   return voronoiDiagram;
 };
+
+const overlapPlayer = (mousePos, player) => {
+  const distance = Math.sqrt(((player.y - mousePos.y) ** 2) + ((player.x - mousePos.x) ** 2));
+  return distance < 8
+}
 
 
 /***/ }),
@@ -28184,13 +28230,11 @@ __webpack_require__.r(__webpack_exports__);
 
 class Court {
   constructor(canvas) {
-    this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.width = canvas.width;
     this.height = canvas.height;
 
     this.time = 1000;
-
     this.players =
     [
       [0.35 * this.width, 0.5 * this.height],
@@ -28202,17 +28246,14 @@ class Court {
       return new _player__WEBPACK_IMPORTED_MODULE_1__["default"](pos, i); }
     );
 
-    this.court = d3__WEBPACK_IMPORTED_MODULE_0__["select"](document.createElement('court'));
-
-    // this.voronoi = d3.voronoi().extent([[0, 0], [this.width, this.height]]);
-    // this.positions = this.players.map((player) => [player.x, player.y]);
     this.diagram = Object(_calc__WEBPACK_IMPORTED_MODULE_2__["vDiagram"])(this);
 
     this.draw = this.draw.bind(this);
-
     this.addDraggable = this.addDraggable.bind(this);
     this.dragSubject = this.dragSubject.bind(this);
     this.dragStart = this.dragStart.bind(this);
+    this.addClickable = this.addClickable.bind(this);
+    this.updateTime = this.updateTime.bind(this);
   }
 
   addDraggable(canvas) {
@@ -28225,28 +28266,20 @@ class Court {
     );
   }
 
-  // dataBind() {
-  //   const join = this.court.selectAll('court.player').data(this.players);
-  //   join.enter()
-  //     .append('court')
-  //     .attr('class', 'player')
-  //     .attr('x', (d) => {
-  //       return d.x;
-  //     })
-  //     .attr('y', (d) => {
-  //       return d.y;
-  //     })
-  //     .attr('speed', (d) => {
-  //       return d.speed;
-  //     })
-  //     .attr('r', (d) => {
-  //       return calcPxDistance(d.speed, this.time);
-  //     });
-  //   join.exit()
-  //   .transition()
-  //     .attr('speed', 0)
-  //     .remove();
-  // }
+  addClickable(canvas) {
+    canvas.on("click", () => {
+      const pos = {
+        x: d3__WEBPACK_IMPORTED_MODULE_0__["event"].offsetX,
+        y: d3__WEBPACK_IMPORTED_MODULE_0__["event"].offsetY
+      };
+      for (let i = 0, n = this.players.length; i < n; ++i) {
+        let player = this.players[i];
+        if (Object(_calc__WEBPACK_IMPORTED_MODULE_2__["overlapPlayer"])(pos, player)) {
+          player.openMenu();
+        }
+      }
+    });
+  }
 
   draw() {
     const positions = this.players.map((player) => [player.x, player.y]);
@@ -28294,8 +28327,10 @@ class Court {
   }
 
   dragged() {
-    d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
-    d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
+    if (!Object(_calc__WEBPACK_IMPORTED_MODULE_2__["overlapPlayer"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject)) {
+      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
+      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
+    }
   }
 
   dragEnd() {
@@ -28324,11 +28359,6 @@ class Court {
     this.time = time;
     this.draw();
   }
-
-  updateSpeed(player, speed) {
-    player.speed = speed;
-    this.draw();
-  }
 }
 
 
@@ -28344,21 +28374,33 @@ class Court {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Player; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+
+
 class Player {
-  constructor(pos, key) {
+  constructor(pos, id) {
     this.x = pos[0];
     this.y = pos[1];
     this.speed = 4;
-    this.key = key;
+    this.id = id;
+
+    this.updateSpeed = this.updateSpeed.bind(this);
+    this.openMenu = this.openMenu.bind(this);
   }
 
-  updateAttr (pos, speed) {
-    this.x = pos[0];
-    this.y = pos[1];
+  updateSpeed (speed) {
     this.speed = speed;
+    // call court.draw()
   }
 
-
+  openMenu () {
+    console.log('open the menu!');
+    // open up the menu for individual player
+    // toggle class of the menu
+    // add hidden input
+    // pass id to the menu
+    // pass speed to the menu for prefilled form
+  }
 }
 
 

@@ -9,5 +9,12 @@ const canvas = d3.select("#container")
 
 const court = new Court(canvas.node());
 
+court.addClickable(canvas);
 court.addDraggable(canvas);
 court.draw();
+
+// d3.select(".player-speed")
+// add event listener to menu that called updateSpeed;
+
+// d3.select(".coverage-time")
+// add event listenter to menu that edits court.time;
