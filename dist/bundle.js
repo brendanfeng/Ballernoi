@@ -28204,8 +28204,8 @@ const vDiagram = (court) => {
 };
 
 const overlapPlayer = (mousePos, player) => {
-  const distance = Math.sqrt(((player.y - mousePos.y) ** 2) + ((player.x - mousePos.x) ** 2));
-  return distance < 8
+  const distance = Math.sqrt((player.y - mousePos.y) ** 2 + (player.x - mousePos.x) ** 2);
+  return distance < 30
 }
 
 
@@ -28252,6 +28252,8 @@ class Court {
     this.addDraggable = this.addDraggable.bind(this);
     this.dragSubject = this.dragSubject.bind(this);
     this.dragStart = this.dragStart.bind(this);
+    this.dragged = this.dragged.bind(this);
+    this.dragEnd = this.dragEnd.bind(this);
     this.addClickable = this.addClickable.bind(this);
     this.updateTime = this.updateTime.bind(this);
   }
@@ -28327,10 +28329,13 @@ class Court {
   }
 
   dragged() {
-    if (!Object(_calc__WEBPACK_IMPORTED_MODULE_2__["overlapPlayer"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject)) {
-      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
-      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
-    }
+    const subjectIdx = this.players.indexOf(d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject);
+    const otherPlayers = Array.from(this.players);
+    otherPlayers.splice(subjectIdx, 1);
+      if (otherPlayers.every((currentValue) => !Object(_calc__WEBPACK_IMPORTED_MODULE_2__["overlapPlayer"])({x: d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, y: d3__WEBPACK_IMPORTED_MODULE_0__["event"].y}, currentValue))) {
+        d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
+        d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
+      }
   }
 
   dragEnd() {
@@ -28347,7 +28352,7 @@ class Court {
 
   drawPos (pos) {
     this.context.moveTo(pos[0] + 8, pos[1]);
-    this.context.arc(pos[0], pos[1], 8, 0, 2 * Math.PI);
+    this.context.arc(pos[0], pos[1], 15, 0, 2 * Math.PI);
   }
 
   drawRange (x, y, r) {

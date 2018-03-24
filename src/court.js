@@ -30,6 +30,8 @@ export default class Court {
     this.addDraggable = this.addDraggable.bind(this);
     this.dragSubject = this.dragSubject.bind(this);
     this.dragStart = this.dragStart.bind(this);
+    this.dragged = this.dragged.bind(this);
+    this.dragEnd = this.dragEnd.bind(this);
     this.addClickable = this.addClickable.bind(this);
     this.updateTime = this.updateTime.bind(this);
   }
@@ -105,10 +107,13 @@ export default class Court {
   }
 
   dragged() {
-    if (!overlapPlayer([d3.event.x, d3.event.y], d3.event.subject)) {
-      d3.event.subject.x = d3.event.x;
-      d3.event.subject.y = d3.event.y;
-    }
+    const subjectIdx = this.players.indexOf(d3.event.subject);
+    const otherPlayers = Array.from(this.players);
+    otherPlayers.splice(subjectIdx, 1);
+      if (otherPlayers.every((currentValue) => !overlapPlayer({x: d3.event.x, y: d3.event.y}, currentValue))) {
+        d3.event.subject.x = d3.event.x;
+        d3.event.subject.y = d3.event.y;
+      }
   }
 
   dragEnd() {
@@ -125,7 +130,7 @@ export default class Court {
 
   drawPos (pos) {
     this.context.moveTo(pos[0] + 8, pos[1]);
-    this.context.arc(pos[0], pos[1], 8, 0, 2 * Math.PI);
+    this.context.arc(pos[0], pos[1], 15, 0, 2 * Math.PI);
   }
 
   drawRange (x, y, r) {

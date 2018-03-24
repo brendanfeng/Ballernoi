@@ -12,6 +12,6 @@ export const vDiagram = (court) => {
 };
 
 export const overlapPlayer = (mousePos, player) => {
-  const distance = Math.sqrt(((player.y - mousePos.y) ** 2) + ((player.x - mousePos.x) ** 2));
-  return distance < 8
+  const distance = Math.sqrt((player.y - mousePos.y) ** 2 + (player.x - mousePos.x) ** 2);
+  return distance < 30
 }
