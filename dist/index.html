@@ -2,25 +2,46 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Ballernoi</title>
+    <title>Ballernoi.js</title>
     <link rel="stylesheet" href="../assets/ballernoi.css">
   </head>
   <body>
-    <div id="container"></div>
-    <div class="menu">
-      <form class="player-speed">
-        <button class="nba-players" name="button">NBA Players</button>
-          <div id="player-dropdown">
-            <input type="text" placeholder= "Search..." class="dropdown-search">
-            <div class="player-list">
-            <div>
-          </div>
-        <input type="number" name="" value=""></input>
-        <input class="playerId" type="hidden"></input>
-        <button type="submit" class="submit-button"></button>
-      </form>
-      <input class="coverage-time" type="number"></input>
-    </div>
+    <header>
+      <span>Ballernoi.js</span>
+    </header>
+    <main class="content">
+      <div id="container"></div>
+      <div class="menu">
+        <div class="player-menu">
+          <button class="nba-players" name="button">NBA Players</button>
+            <div id="player-dropdown">
+              <input type="text" placeholder= "Search..." class="dropdown-search">
+              <div class="player-list">
+              </div>
+            </div>
+          <input id="player-speed" type="number" step="0.001" value=""></input>
+        </div>
+        <div class="slider-container">
+          <input id="coverage-time" type="range" min="100" max="200" value="100"></input>
+        </div>
+        <div id="time-text"></div>
+        <p class="instructions" id="menu-explanation">
+          Click on a position and choose a NBA Player from the dropdown to see their coverage range.
+          If you want to set a speed, just type a number (in miles per hour). Adjusting the time will
+          show the distance covered within that time frame.
+        </p>
+      </div>
+    </main>
+    <footer class="explanation">
+      <p id="scale">15 pixels = 1 foot</p>
+      <div>
+        <p class="instructions" id="voronoi-explanation">
+        </p>
+        <div class="contact-info">
+          <span>Made by Brendan Feng</span>
+        </div>
+      </div>
+    </footer>
     <script src="bundle.js"></script>
   </body>
 </html>

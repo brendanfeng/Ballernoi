@@ -11,7 +11,12 @@ export const vDiagram = (court) => {
   return voronoiDiagram;
 };
 
-export const overlapPlayer = (mousePos, player) => {
+export const clicked = (mousePos, player) => {
   const distance = Math.sqrt((player.y - mousePos.y) ** 2 + (player.x - mousePos.x) ** 2);
+  return distance < 15
+}
+
+export const playerCollision = (currentPos, player) => {
+  const distance = Math.sqrt((currentPos[0] - player.x) ** 2 + (currentPos[1] - player.y) ** 2);
   return distance < 30
 }

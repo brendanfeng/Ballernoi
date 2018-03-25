@@ -4,3 +4,11 @@ canvas {
   background-repeat: no-repeat;
   background-position: bottom;
 }
+
+.player-menu {
+  display: none;
+}
+
+.show {
+  display: block;
+}

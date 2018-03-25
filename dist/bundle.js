@@ -28152,7 +28152,9 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _court__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./court */ "./src/court.js");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
-/* harmony import */ var _calc__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./calc */ "./src/calc.js");
+/* harmony import */ var _listeners__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./listeners */ "./src/listeners.js");
+
+
 
 
 
@@ -28161,18 +28163,13 @@ const canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("#container")
   .append("canvas")
   .attr('width', 750)
   .attr('height', 705);
-
 const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
 
-court.addClickable(canvas);
-court.addDraggable(canvas);
+Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
+Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
+Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addSpeedListener"])(court);
+Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addTimeListener"])(court);
 court.draw();
-
-// d3.select(".player-speed")
-// add event listener to menu that called updateSpeed;
-
-// d3.select(".coverage-time")
-// add event listenter to menu that edits court.time;
 
 
 /***/ }),
@@ -28181,14 +28178,15 @@ court.draw();
 /*!*********************!*\
   !*** ./src/calc.js ***!
   \*********************/
-/*! exports provided: calcPxDistance, vDiagram, overlapPlayer */
+/*! exports provided: calcPxDistance, vDiagram, clicked, playerCollision */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calcPxDistance", function() { return calcPxDistance; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "vDiagram", function() { return vDiagram; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "overlapPlayer", function() { return overlapPlayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clicked", function() { return clicked; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "playerCollision", function() { return playerCollision; });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 
 
@@ -28203,8 +28201,13 @@ const vDiagram = (court) => {
   return voronoiDiagram;
 };
 
-const overlapPlayer = (mousePos, player) => {
+const clicked = (mousePos, player) => {
   const distance = Math.sqrt((player.y - mousePos.y) ** 2 + (player.x - mousePos.x) ** 2);
+  return distance < 15
+}
+
+const playerCollision = (currentPos, player) => {
+  const distance = Math.sqrt((currentPos[0] - player.x) ** 2 + (currentPos[1] - player.y) ** 2);
   return distance < 30
 }
 
@@ -28249,38 +28252,7 @@ class Court {
     this.diagram = Object(_calc__WEBPACK_IMPORTED_MODULE_2__["vDiagram"])(this);
 
     this.draw = this.draw.bind(this);
-    this.addDraggable = this.addDraggable.bind(this);
-    this.dragSubject = this.dragSubject.bind(this);
-    this.dragStart = this.dragStart.bind(this);
-    this.dragged = this.dragged.bind(this);
-    this.dragEnd = this.dragEnd.bind(this);
-    this.addClickable = this.addClickable.bind(this);
     this.updateTime = this.updateTime.bind(this);
-  }
-
-  addDraggable(canvas) {
-    canvas.call( d3__WEBPACK_IMPORTED_MODULE_0__["drag"]()
-      .subject(this.dragSubject)
-      .on("start", this.dragStart)
-      .on("drag", this.dragged)
-      .on("end", this.dragEnd)
-      .on("start.render drag.render end.render", this.draw)
-    );
-  }
-
-  addClickable(canvas) {
-    canvas.on("click", () => {
-      const pos = {
-        x: d3__WEBPACK_IMPORTED_MODULE_0__["event"].offsetX,
-        y: d3__WEBPACK_IMPORTED_MODULE_0__["event"].offsetY
-      };
-      for (let i = 0, n = this.players.length; i < n; ++i) {
-        let player = this.players[i];
-        if (Object(_calc__WEBPACK_IMPORTED_MODULE_2__["overlapPlayer"])(pos, player)) {
-          player.openMenu();
-        }
-      }
-    });
   }
 
   draw() {
@@ -28295,11 +28267,13 @@ class Court {
       this.context.stroke();
 
     this.context.beginPath();
-    for (let i = 0, n = positions.length; i < n; ++i) this.drawPos(positions[i]);
+    for (let i = 0, n = positions.length; i < n; ++i) {
+      this.drawPos(positions[i]);
       this.context.fillStyle = "#000";
       this.context.fill();
       this.context.strokeStyle = "#000";
       this.context.stroke();
+    }
 
     this.context.beginPath();
     for (let i = 0, n = this.players.length; i < n; ++i) {
@@ -28311,37 +28285,6 @@ class Court {
       this.context.stroke();
   }
 
-  dragSubject() {
-    let subject, i, n, player, site;
-    for (i = 0, n = this.players.length; i < n; ++i) {
-      player = this.players[i];
-      site = this.diagram.find(d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y);
-      if (site[0] === player.x && site[1] === player.y) {
-        subject = player;
-        break;
-      }
-    }
-    return subject;
-  }
-
-  dragStart() {
-    d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.active = true;
-  }
-
-  dragged() {
-    const subjectIdx = this.players.indexOf(d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject);
-    const otherPlayers = Array.from(this.players);
-    otherPlayers.splice(subjectIdx, 1);
-      if (otherPlayers.every((currentValue) => !Object(_calc__WEBPACK_IMPORTED_MODULE_2__["overlapPlayer"])({x: d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, y: d3__WEBPACK_IMPORTED_MODULE_0__["event"].y}, currentValue))) {
-        d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
-        d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
-      }
-  }
-
-  dragEnd() {
-    d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.active = false;
-  }
-
   drawPoly (poly) {
     this.context.moveTo(poly[0][0], poly[0][1]);
     for (let i = 1, n = poly.length; i < n; ++i) {
@@ -28351,7 +28294,7 @@ class Court {
   }
 
   drawPos (pos) {
-    this.context.moveTo(pos[0] + 8, pos[1]);
+    this.context.moveTo(pos[0] + 15, pos[1]);
     this.context.arc(pos[0], pos[1], 15, 0, 2 * Math.PI);
   }
 
@@ -28365,6 +28308,109 @@ class Court {
     this.draw();
   }
 }
+
+
+/***/ }),
+
+/***/ "./src/listeners.js":
+/*!**************************!*\
+  !*** ./src/listeners.js ***!
+  \**************************/
+/*! exports provided: addDraggable, addClickable, addSpeedListener, addTimeListener */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addDraggable", function() { return addDraggable; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addClickable", function() { return addClickable; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addSpeedListener", function() { return addSpeedListener; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addTimeListener", function() { return addTimeListener; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+/* harmony import */ var _calc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./calc */ "./src/calc.js");
+
+
+
+const addDraggable = (canvas, court) => {
+  canvas.call( d3__WEBPACK_IMPORTED_MODULE_0__["drag"]()
+    .subject(() => dragSubject(court))
+    .on("start", dragStart)
+    .on("drag", () => dragged(court))
+    .on("end", dragEnd)
+    .on("start.render drag.render end.render", court.draw)
+  );
+};
+
+const addClickable = (canvas, court) => {
+  canvas.on("click", () => {
+    const pos = {
+      x: d3__WEBPACK_IMPORTED_MODULE_0__["event"].offsetX,
+      y: d3__WEBPACK_IMPORTED_MODULE_0__["event"].offsetY
+    };
+    for (let i = 0, n = court.players.length; i < n; ++i) {
+      let player = court.players[i];
+      if (Object(_calc__WEBPACK_IMPORTED_MODULE_1__["clicked"])(pos, player)) {
+        player.toggleSelect();
+        player.clickedOn ? player.openMenu() : player.closeMenu();
+      } else {
+        player.clickedOn = false;
+      }
+    }
+  });
+};
+
+const addSpeedListener = (court) => {
+  const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
+  speed.on("input", () => {
+    d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
+    court.players.forEach( (player) => {
+      if (player.id === +speed.attr("playerId")) {
+        player.updateSpeed(court, d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value);
+      }
+    });
+  });
+};
+
+const addTimeListener = (court) => {
+  const slider = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#coverage-time");
+  const time = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#time-text");
+  time.html((slider.property("value") / 100) + " sec");
+  slider.on('input', () => {
+    d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
+    time.html(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value / 100);
+    court.updateTime(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value * 10);
+  });
+};
+
+const dragSubject = (court) => {
+  let subject, i, n, player, site;
+  for (i = 0, n = court.players.length; i < n; ++i) {
+    player = court.players[i];
+    site = court.diagram.find(d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y);
+    if (site[0] === player.x && site[1] === player.y) {
+      subject = player;
+      break;
+    }
+  }
+  return subject;
+};
+
+const dragStart = () => {
+  d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.active = true;
+};
+
+const dragged = (court) => {
+  const subjectIdx = court.players.indexOf(d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject);
+  const otherPlayers = Array.from(court.players);
+  otherPlayers.splice(subjectIdx, 1);
+    if (otherPlayers.every((currentValue) => !Object(_calc__WEBPACK_IMPORTED_MODULE_1__["playerCollision"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], currentValue))) {
+      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
+      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
+    }
+};
+
+const dragEnd =() => {
+  d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.active = false;
+};
 
 
 /***/ }),
@@ -28386,25 +28432,39 @@ class Player {
   constructor(pos, id) {
     this.x = pos[0];
     this.y = pos[1];
-    this.speed = 4;
+    this.speed = 4.000;
     this.id = id;
+    this.clickedOn = false;
 
     this.updateSpeed = this.updateSpeed.bind(this);
+    this.toggleSelect = this.toggleSelect.bind(this);
     this.openMenu = this.openMenu.bind(this);
   }
 
-  updateSpeed (speed) {
+  updateSpeed (court, speed) {
     this.speed = speed;
-    // call court.draw()
+    court.draw();
+  }
+
+  toggleSelect () {
+    if (this.clickedOn) {
+      this.clickedOn = false;
+    } else {
+      this.clickedOn = true;
+    }
   }
 
   openMenu () {
-    console.log('open the menu!');
-    // open up the menu for individual player
-    // toggle class of the menu
-    // add hidden input
-    // pass id to the menu
-    // pass speed to the menu for prefilled form
+    const menu = d3__WEBPACK_IMPORTED_MODULE_0__["select"](".player-menu");
+    const input = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
+    input.attr('playerId', this.id);
+    input.property("value", this.speed);
+    menu.classed('show', true);
+  }
+
+  closeMenu () {
+    const menu = d3__WEBPACK_IMPORTED_MODULE_0__["select"](".player-menu");
+    menu.classed('show', null);
   }
 }
 
