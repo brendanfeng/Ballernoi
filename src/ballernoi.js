@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   addClickable(canvas, court);
   addDraggable(canvas, court);
-  addNBAListener();
+  addNBAListener(court);
   addSpeedListener(court);
   addTimeListener(court);
   court.draw();

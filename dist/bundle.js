@@ -28167,7 +28167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
-  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addNBAListener"])();
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addNBAListener"])(court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addSpeedListener"])(court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addTimeListener"])(court);
   court.draw();
@@ -28384,7 +28384,7 @@ const addTimeListener = (court) => {
   });
 };
 
-const addNBAListener = () => {
+const addNBAListener = (court) => {
   const search = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#list-search");
   const list = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-list");
   const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
@@ -28399,6 +28399,11 @@ const addNBAListener = () => {
       .on('click', () => {
         d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
         speed.property('value', player.speed);
+        court.players.forEach((p) => {
+          if (p.id === +speed.attr("playerId")) {
+            p.updateSpeed(court, player.speed);
+          }
+        });
       });
     });
   });

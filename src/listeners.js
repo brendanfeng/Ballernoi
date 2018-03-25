@@ -52,7 +52,7 @@ export const addTimeListener = (court) => {
   });
 };
 
-export const addNBAListener = () => {
+export const addNBAListener = (court) => {
   const search = d3.select("#list-search");
   const list = d3.select("#player-list");
   const speed = d3.select("#player-speed");
@@ -67,6 +67,11 @@ export const addNBAListener = () => {
       .on('click', () => {
         d3.event.preventDefault();
         speed.property('value', player.speed);
+        court.players.forEach((p) => {
+          if (p.id === +speed.attr("playerId")) {
+            p.updateSpeed(court, player.speed);
+          }
+        });
       });
     });
   });
