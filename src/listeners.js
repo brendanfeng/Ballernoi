@@ -47,8 +47,40 @@ export const addTimeListener = (court) => {
   time.html((slider.property("value") / 100) + " sec");
   slider.on('input', () => {
     d3.event.preventDefault();
-    time.html(d3.event.target.value / 100);
+    time.html(d3.event.target.value / 100 + " sec");
     court.updateTime(d3.event.target.value * 10);
+  });
+};
+
+export const addNBAListener = () => {
+  const search = d3.select("#list-search");
+  const list = d3.select("#player-list");
+  const speed = d3.select("#player-speed");
+
+  d3.csv("/assets/player_data.csv", (d) => {
+    return { name: d.name, speed: +d.speed };
+  }).then((data) => {
+    data.forEach((player) => {
+    list.append('div')
+      .classed('player-name', true)
+      .html(player.name)
+      .on('click', () => {
+        d3.event.preventDefault();
+        speed.property('value', player.speed);
+      });
+    });
+  });
+
+  search.on("input", () => {
+    d3.selectAll(".player-name")
+    .style('display', function() {
+      const query = d3.event.target.value.toUpperCase();
+      if (this.innerHTML.toUpperCase().indexOf(query) > -1) {
+        return "";
+      } else {
+        return "none";
+      }
+    });
   });
 };
 

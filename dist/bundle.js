@@ -28158,18 +28158,20 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("#container")
+    .append("canvas")
+    .attr('width', 750)
+    .attr('height', 705);
+  const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
 
-const canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("#container")
-  .append("canvas")
-  .attr('width', 750)
-  .attr('height', 705);
-const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
-
-Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
-Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
-Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addSpeedListener"])(court);
-Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addTimeListener"])(court);
-court.draw();
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addNBAListener"])();
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addSpeedListener"])(court);
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addTimeListener"])(court);
+  court.draw();
+});
 
 
 /***/ }),
@@ -28316,7 +28318,7 @@ class Court {
 /*!**************************!*\
   !*** ./src/listeners.js ***!
   \**************************/
-/*! exports provided: addDraggable, addClickable, addSpeedListener, addTimeListener */
+/*! exports provided: addDraggable, addClickable, addSpeedListener, addTimeListener, addNBAListener */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -28325,6 +28327,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addClickable", function() { return addClickable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addSpeedListener", function() { return addSpeedListener; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addTimeListener", function() { return addTimeListener; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addNBAListener", function() { return addNBAListener; });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 /* harmony import */ var _calc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./calc */ "./src/calc.js");
 
@@ -28376,8 +28379,40 @@ const addTimeListener = (court) => {
   time.html((slider.property("value") / 100) + " sec");
   slider.on('input', () => {
     d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
-    time.html(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value / 100);
+    time.html(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value / 100 + " sec");
     court.updateTime(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value * 10);
+  });
+};
+
+const addNBAListener = () => {
+  const search = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#list-search");
+  const list = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-list");
+  const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
+
+  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("/assets/player_data.csv", (d) => {
+    return { name: d.name, speed: +d.speed };
+  }).then((data) => {
+    data.forEach((player) => {
+    list.append('div')
+      .classed('player-name', true)
+      .html(player.name)
+      .on('click', () => {
+        d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
+        speed.property('value', player.speed);
+      });
+    });
+  });
+
+  search.on("input", () => {
+    d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"](".player-name")
+    .style('display', function() {
+      const query = d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value.toUpperCase();
+      if (this.innerHTML.toUpperCase().indexOf(query) > -1) {
+        return "";
+      } else {
+        return "none";
+      }
+    });
   });
 };
 

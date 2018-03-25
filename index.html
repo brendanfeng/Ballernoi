@@ -4,21 +4,21 @@
     <meta charset="utf-8">
     <title>Ballernoi.js</title>
     <link rel="stylesheet" href="./assets/ballernoi.css">
+    <script src="./dist/bundle.js"></script>
   </head>
   <body>
-    <header>
+    <header id="title">
       <span>Ballernoi.js</span>
     </header>
     <main class="content">
       <div id="container"></div>
       <div class="menu">
         <div class="player-menu">
-          <button class="nba-players" name="button">NBA Players</button>
-            <div id="player-dropdown">
-              <input type="text" placeholder= "Search..." class="dropdown-search">
-              <div class="player-list">
-              </div>
+          <div id="player-container">
+            <input type="text" placeholder= "Search..." id="list-search">
+            <div id="player-list">
             </div>
+          </div>
           <input id="player-speed" type="number" step="0.001" value=""></input>
         </div>
         <div class="slider-container">
@@ -26,22 +26,22 @@
         </div>
         <div id="time-text"></div>
         <p class="instructions" id="menu-explanation">
-          Click on a position and choose a NBA Player from the dropdown to see their coverage range.
-          If you want to set a speed, just type a number (in miles per hour). Adjusting the time will
-          show the distance covered within that time frame.
+          Click on a player from the court to edit their speed (in miles per hour).
+          You can either choose a NBA Player from the list or edit the speed directly.
+          Adjusting the time slider will show the distance covered within that time frame
+          (between 1 and 2 seconds).
         </p>
       </div>
     </main>
     <footer class="explanation">
       <p id="scale">15 pixels = 1 foot</p>
-      <div>
+      <div class="menu">
         <p class="instructions" id="voronoi-explanation">
         </p>
-        <div class="contact-info">
-          <span>Made by Brendan Feng</span>
+        <p class="contact-info">Made by Brendan Feng</p>
+        <div class="contact-info" id="logos">
         </div>
       </div>
     </footer>
-    <script src="./dist/bundle.js"></script>
   </body>
 </html>
