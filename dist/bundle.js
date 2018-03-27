@@ -28264,18 +28264,21 @@ class Court {
     this.context.clearRect(0, 0, this.width, this.height);
 
     this.context.beginPath();
-    for (let i = 0, n = polygons.length; i < n; ++i) this.drawPoly(polygons[i]);
-      this.context.strokeStyle = "#F60";
-      this.context.stroke();
+    for (let i = 0, n = polygons.length; i < n; ++i) {
+      this.drawPoly(polygons[i]);
+    }
+    this.context.lineWidth = 2;
+    this.context.strokeStyle = "rgb(0,0,60)";
+    this.context.stroke();
 
     this.context.beginPath();
     for (let i = 0, n = positions.length; i < n; ++i) {
       this.drawPos(positions[i]);
-      this.context.fillStyle = "#000";
-      this.context.fill();
-      this.context.strokeStyle = "#000";
-      this.context.stroke();
     }
+    this.context.fillStyle = "#000";
+    this.context.fill();
+    this.context.strokeStyle = "#000";
+    this.context.stroke();
 
     this.context.beginPath();
     for (let i = 0, n = this.players.length; i < n; ++i) {
@@ -28283,8 +28286,10 @@ class Court {
       let r = Object(_calc__WEBPACK_IMPORTED_MODULE_2__["calcPxDistance"])(player.speed, this.time);
       this.drawRange(player.x, player.y, r);
     }
-      this.context.strokeStyle = "#000";
-      this.context.stroke();
+    this.context.fillStyle = 'rgba(0,0,0,0.3)';
+    this.context.fill();
+    this.context.strokeStyle = "rgb(255,255,255)";
+    this.context.stroke();
   }
 
   drawPoly (poly) {

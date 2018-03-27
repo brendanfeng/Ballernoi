@@ -1,30 +1,50 @@
+body {
+  font-family: 'Mada', sans-serif;
+  background-color: rgb(0,0,60);
+  color: rgb(247,188,136);
+}
+
 #title {
-  font-size: 36px;
   text-align: center;
   padding: 20px;
 }
 
+#title span {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 52px;
+  color: rgb(207, 148, 96);
+}
+
 .content {
   display: flex;
+  justify-content: center;
 }
 
 canvas {
   background-image: url('court_small.png');
-  background-color: rgba(247, 188, 136, 0.3);
+  background-color: rgb(247,188,136);
   background-repeat: no-repeat;
   background-position: bottom;
+  cursor: move;
 }
 
 .menu {
-  padding: 20px;
+  padding: 0 20px;
   min-width: 300px;
+  width: 300px;
+  max-width: 300px;
+  height: 705px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
+  font-size: 24px;
 }
 
 .player-menu {
   display: none;
+  border: rgb(247,188,136) 1px solid;
+  padding: 10px;
 }
 
 #player-container {
@@ -33,24 +53,114 @@ canvas {
   align-items: center;
 }
 
+#list-search {
+  height: 32px;
+  font-size: 24px;
+  width: 100%;
+  background-color: rgb(128,128,128);
+  color: rgb(0,0,60);
+}
+
+#list-search::placeholder {
+    color: rgb(0,0,60,0.5);
+    opacity: 1;
+}
+
+#list-search:-ms-input-placeholder {
+    color: rgb(0,0,60,0.5);
+}
+
+#list-search::-ms-input-placeholder {
+    color: rgb(0,0,60,0.5);
+}
+
 #player-list {
-  height: 150px;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 242px;
   overflow-y: auto;
 }
 
 .player-name {
+  display: block;
   text-align: center;
-  font-size: 16px;
 }
 
 .player-name:hover {
   cursor: pointer;
-  background: #ccc;
+  background: rgb(128,128,128);
+  color: rgb(0,0,60);
+}
+
+#player-speed {
+  text-align: right;
+  height: 32px;
+  font-size: 24px;
+}
+
+#player-speed::-webkit-inner-spin-button,
+#player-speed::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+#player-speed {
+  -moz-appearance: textfield;
+  color: rgb(0,0,60);
+  background-color: rgb(128,128,128);
+  margin-bottom: 15px;
+}
+
+.slider-container {
+  width: 100%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border: rgb(247,188,136) 1px solid;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 80%;
+    height: 8px;
+    border-radius: 5px;
+    background: rgb(128,128,128);
+    outline: none;
+    margin-bottom: 15px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background-color: rgb(247,188,136);
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: rgb(247,188,136);
+    cursor: pointer;
+}
+
+#time-text {
+  color: rgb(247,188,136);
+  text-align: center;
+}
+
+#menu-explanation {
+  padding: 10px;
+  border: rgb(247,188,136) 1px solid;
 }
 
 .instructions {
   text-align: center;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .show {
