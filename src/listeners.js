@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { clicked, playerCollision } from './calc';
+import { clicked, playerCollided } from './calc';
 
 export const addDraggable = (canvas, court) => {
   canvas.call( d3.drag()
@@ -26,6 +26,7 @@ export const addClickable = (canvas, court) => {
         player.clickedOn = false;
       }
     }
+    court.draw();
   });
 };
 
@@ -110,7 +111,7 @@ const dragged = (court) => {
   const subjectIdx = court.players.indexOf(d3.event.subject);
   const otherPlayers = Array.from(court.players);
   otherPlayers.splice(subjectIdx, 1);
-    if (otherPlayers.every((currentValue) => !playerCollision([d3.event.x, d3.event.y], currentValue))) {
+    if (otherPlayers.every((currentValue) => !playerCollided([d3.event.x, d3.event.y], currentValue))) {
       d3.event.subject.x = d3.event.x;
       d3.event.subject.y = d3.event.y;
     }

@@ -12,7 +12,7 @@ body {
 #title span {
   font-family: 'Luckiest Guy', cursive;
   font-size: 52px;
-  color: rgb(207, 148, 96);
+  color: rgb(247, 188, 136);
 }
 
 .content {
@@ -25,7 +25,6 @@ canvas {
   background-color: rgb(247,188,136);
   background-repeat: no-repeat;
   background-position: bottom;
-  cursor: move;
 }
 
 .menu {
@@ -161,6 +160,20 @@ canvas {
 .instructions {
   text-align: center;
   font-size: 20px;
+}
+
+.explanation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.explanation p {
+  max-width: 1250px;
+  text-align: left;
+  margin-top: 24px;
+  padding: 10px;
+  border: 1px solid rgb(247,188,136);
 }
 
 .show {

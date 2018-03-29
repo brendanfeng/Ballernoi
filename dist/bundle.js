@@ -28157,20 +28157,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("#container")
-    .append("canvas")
-    .attr('width', 750)
-    .attr('height', 705);
+  .append("canvas")
+  .attr('width', 750)
+  .attr('height', 705);
   const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
-
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addNBAListener"])(court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addSpeedListener"])(court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addTimeListener"])(court);
-  court.draw();
+  requestAnimationFrame(court.draw, 200);
 });
 
 
@@ -28180,7 +28178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /*!*********************!*\
   !*** ./src/calc.js ***!
   \*********************/
-/*! exports provided: calcPxDistance, vDiagram, clicked, playerCollision */
+/*! exports provided: calcPxDistance, vDiagram, clicked, playerCollided */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -28188,7 +28186,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calcPxDistance", function() { return calcPxDistance; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "vDiagram", function() { return vDiagram; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clicked", function() { return clicked; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "playerCollision", function() { return playerCollision; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "playerCollided", function() { return playerCollided; });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 
 
@@ -28208,9 +28206,10 @@ const clicked = (mousePos, player) => {
   return distance < 15
 }
 
-const playerCollision = (currentPos, player) => {
-  const distance = Math.sqrt((currentPos[0] - player.x) ** 2 + (currentPos[1] - player.y) ** 2);
-  return distance < 30
+const playerCollided = (currentPos, otherPlayer) => {
+  const distance = Math.sqrt((currentPos[0] - otherPlayer.x) ** 2 + (currentPos[1] - otherPlayer.y) ** 2);
+  const outsideBounds = currentPos[0] > 750 || currentPos[1] > 705 || currentPos[0] < 0 || currentPos[1] < 0;
+  return distance < 30 || outsideBounds;
 }
 
 
@@ -28258,56 +28257,37 @@ class Court {
   }
 
   draw() {
-    const positions = this.players.map((player) => [player.x, player.y]);
     this.diagram = Object(_calc__WEBPACK_IMPORTED_MODULE_2__["vDiagram"])(this);
     const polygons = this.diagram.polygons();
     this.context.clearRect(0, 0, this.width, this.height);
 
-    this.context.beginPath();
-    for (let i = 0, n = polygons.length; i < n; ++i) {
-      this.drawPoly(polygons[i]);
-    }
-    this.context.lineWidth = 2;
-    this.context.strokeStyle = "rgb(0,0,60)";
-    this.context.stroke();
-
-    this.context.beginPath();
-    for (let i = 0, n = positions.length; i < n; ++i) {
-      this.drawPos(positions[i]);
-    }
-    this.context.fillStyle = "#000";
-    this.context.fill();
-    this.context.strokeStyle = "#000";
-    this.context.stroke();
-
-    this.context.beginPath();
     for (let i = 0, n = this.players.length; i < n; ++i) {
       let player = this.players[i];
       let r = Object(_calc__WEBPACK_IMPORTED_MODULE_2__["calcPxDistance"])(player.speed, this.time);
-      this.drawRange(player.x, player.y, r);
+      player.drawRange(this.context, r);
     }
-    this.context.fillStyle = 'rgba(0,0,0,0.3)';
-    this.context.fill();
-    this.context.strokeStyle = "rgb(255,255,255)";
-    this.context.stroke();
+
+    for (let i = 0, n = polygons.length; i < n; ++i) {
+      this.drawPoly(polygons[i]);
+    }
+
+    for (let i = 0, n = this.players.length; i < n; ++i) {
+      let player = this.players[i];
+      player.drawPlayer(this.context);
+    }
+
   }
 
   drawPoly (poly) {
+    this.context.beginPath();
     this.context.moveTo(poly[0][0], poly[0][1]);
     for (let i = 1, n = poly.length; i < n; ++i) {
       this.context.lineTo(poly[i][0], poly[i][1]);
     }
+    this.context.lineWidth = 2;
+    this.context.strokeStyle = "rgb(0,0,60)";
+    this.context.stroke();
     this.context.closePath();
-  }
-
-  drawPos (pos) {
-    this.context.moveTo(pos[0] + 15, pos[1]);
-    this.context.arc(pos[0], pos[1], 15, 0, 2 * Math.PI);
-  }
-
-  drawRange (x, y, r) {
-    this.context.moveTo(x + r, y);
-    this.context.arc(x, y, r, 0, 2 * Math.PI);
   }
 
   updateTime(time) {
@@ -28363,6 +28343,7 @@ const addClickable = (canvas, court) => {
         player.clickedOn = false;
       }
     }
+    court.draw();
   });
 };
 
@@ -28447,7 +28428,7 @@ const dragged = (court) => {
   const subjectIdx = court.players.indexOf(d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject);
   const otherPlayers = Array.from(court.players);
   otherPlayers.splice(subjectIdx, 1);
-    if (otherPlayers.every((currentValue) => !Object(_calc__WEBPACK_IMPORTED_MODULE_1__["playerCollision"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], currentValue))) {
+    if (otherPlayers.every((currentValue) => !Object(_calc__WEBPACK_IMPORTED_MODULE_1__["playerCollided"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], currentValue))) {
       d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
       d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
     }
@@ -28481,9 +28462,62 @@ class Player {
     this.id = id;
     this.clickedOn = false;
 
+    this.harden = new Image();
+    this.westbrook = new Image();
+    this.davis = new Image();
+
+    this.harden.src = "../assets/harden.png";
+    this.westbrook.src = "../assets/westbrook.png";
+    this.davis.src = "../assets/davis.png";
+
     this.updateSpeed = this.updateSpeed.bind(this);
     this.toggleSelect = this.toggleSelect.bind(this);
     this.openMenu = this.openMenu.bind(this);
+  }
+
+  drawPlayer (ctx) {
+    let img;
+    if (this.speed <= 4) {
+      img = this.harden;
+    } else if (this.speed <= 5) {
+      img = this.westbrook;
+    } else {
+      img = this.davis;
+    }
+    ctx.beginPath();
+    ctx.drawImage(img, this.x-8, this.y-15);
+    if (this.clickedOn) {
+      ctx.arc(this.x, this.y, 15, 0, 2*Math.PI);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgb(255,255,255)";
+    }
+
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  drawRange (ctx, r) {
+    const gradient = ctx.createRadialGradient(this.x, this.y, 15, this.x, this.y, r);
+    gradient.addColorStop(0, 'rgba(255,0,0,0.7)');
+    gradient.addColorStop(0.1, 'rgba(255,0,15,0.7)');
+    gradient.addColorStop(0.2, 'rgba(225,0,45,0.7)');
+    gradient.addColorStop(0.3, 'rgba(195,0,75,0.5)');
+    gradient.addColorStop(0.4, 'rgba(165,0,105,0.5)');
+    gradient.addColorStop(0.5, 'rgba(135,0,135,0.5)');
+    gradient.addColorStop(0.6, 'rgba(105,0,165,0.5)');
+    gradient.addColorStop(0.7, 'rgba(75,0,195,0.4)');
+    gradient.addColorStop(0.8, 'rgba(45,0,225,0.4)');
+    gradient.addColorStop(0.9, 'rgba(0,0,255,0.4)');
+    gradient.addColorStop(1, 'rgba(0,0,255,0.4)');
+    ctx.beginPath();
+    ctx.moveTo(this.x + r, this.y);
+    ctx.arc(this.x, this.y, r, 0, 2 * Math.PI);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+    ctx.stroke();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.closePath();
   }
 
   updateSpeed (court, speed) {

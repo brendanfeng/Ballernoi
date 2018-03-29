@@ -27,56 +27,37 @@ export default class Court {
   }
 
   draw() {
-    const positions = this.players.map((player) => [player.x, player.y]);
     this.diagram = vDiagram(this);
     const polygons = this.diagram.polygons();
     this.context.clearRect(0, 0, this.width, this.height);
 
-    this.context.beginPath();
-    for (let i = 0, n = polygons.length; i < n; ++i) {
-      this.drawPoly(polygons[i]);
-    }
-    this.context.lineWidth = 2;
-    this.context.strokeStyle = "rgb(0,0,60)";
-    this.context.stroke();
-
-    this.context.beginPath();
-    for (let i = 0, n = positions.length; i < n; ++i) {
-      this.drawPos(positions[i]);
-    }
-    this.context.fillStyle = "#000";
-    this.context.fill();
-    this.context.strokeStyle = "#000";
-    this.context.stroke();
-
-    this.context.beginPath();
     for (let i = 0, n = this.players.length; i < n; ++i) {
       let player = this.players[i];
       let r = calcPxDistance(player.speed, this.time);
-      this.drawRange(player.x, player.y, r);
+      player.drawRange(this.context, r);
     }
-    this.context.fillStyle = 'rgba(0,0,0,0.3)';
-    this.context.fill();
-    this.context.strokeStyle = "rgb(255,255,255)";
-    this.context.stroke();
+
+    for (let i = 0, n = polygons.length; i < n; ++i) {
+      this.drawPoly(polygons[i]);
+    }
+
+    for (let i = 0, n = this.players.length; i < n; ++i) {
+      let player = this.players[i];
+      player.drawPlayer(this.context);
+    }
+
   }
 
   drawPoly (poly) {
+    this.context.beginPath();
     this.context.moveTo(poly[0][0], poly[0][1]);
     for (let i = 1, n = poly.length; i < n; ++i) {
       this.context.lineTo(poly[i][0], poly[i][1]);
     }
+    this.context.lineWidth = 2;
+    this.context.strokeStyle = "rgb(0,0,60)";
+    this.context.stroke();
     this.context.closePath();
-  }
-
-  drawPos (pos) {
-    this.context.moveTo(pos[0] + 15, pos[1]);
-    this.context.arc(pos[0], pos[1], 15, 0, 2 * Math.PI);
-  }
-
-  drawRange (x, y, r) {
-    this.context.moveTo(x + r, y);
-    this.context.arc(x, y, r, 0, 2 * Math.PI);
   }
 
   updateTime(time) {

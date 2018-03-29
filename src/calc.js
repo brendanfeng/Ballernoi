@@ -16,7 +16,8 @@ export const clicked = (mousePos, player) => {
   return distance < 15
 }
 
-export const playerCollision = (currentPos, player) => {
-  const distance = Math.sqrt((currentPos[0] - player.x) ** 2 + (currentPos[1] - player.y) ** 2);
-  return distance < 30
+export const playerCollided = (currentPos, otherPlayer) => {
+  const distance = Math.sqrt((currentPos[0] - otherPlayer.x) ** 2 + (currentPos[1] - otherPlayer.y) ** 2);
+  const outsideBounds = currentPos[0] > 750 || currentPos[1] > 705 || currentPos[0] < 0 || currentPos[1] < 0;
+  return distance < 30 || outsideBounds;
 }

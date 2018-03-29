@@ -8,18 +8,16 @@ import {
   addTimeListener
 } from './listeners';
 
-
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = d3.select("#container")
-    .append("canvas")
-    .attr('width', 750)
-    .attr('height', 705);
+  .append("canvas")
+  .attr('width', 750)
+  .attr('height', 705);
   const court = new Court(canvas.node());
-
   addClickable(canvas, court);
   addDraggable(canvas, court);
   addNBAListener(court);
   addSpeedListener(court);
   addTimeListener(court);
-  court.draw();
+  requestAnimationFrame(court.draw, 200);
 });
