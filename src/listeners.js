@@ -58,7 +58,7 @@ export const addNBAListener = (court) => {
   const list = d3.select("#player-list");
   const speed = d3.select("#player-speed");
 
-  d3.csv("/assets/player_data.csv", (d) => {
+  d3.csv("/Ballernoi/assets/player_data.csv", (d) => {
     return { name: d.name, speed: +d.speed };
   }).then((data) => {
     data.forEach((player) => {
