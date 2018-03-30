@@ -14,10 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   .attr('width', 750)
   .attr('height', 705);
   const court = new Court(canvas.node());
+
   addClickable(canvas, court);
   addDraggable(canvas, court);
   addNBAListener(court);
   addSpeedListener(court);
   addTimeListener(court);
-  requestAnimationFrame(court.draw, 200);
+  setInterval(court.draw, 1000);
 });

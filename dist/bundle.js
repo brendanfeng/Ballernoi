@@ -28163,12 +28163,13 @@ document.addEventListener('DOMContentLoaded', () => {
   .attr('width', 750)
   .attr('height', 705);
   const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
+
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addNBAListener"])(court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addSpeedListener"])(court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addTimeListener"])(court);
-  requestAnimationFrame(court.draw, 200);
+  setInterval(court.draw, 1000);
 });
 
 
