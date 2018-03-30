@@ -28498,7 +28498,7 @@ class Player {
 
   drawRange (ctx, r) {
     const gradient = ctx.createRadialGradient(this.x, this.y, 15, this.x, this.y, r);
-    gradient.addColorStop(0, 'rgba(255,0,0,0.7)');
+    gradient.addColorStop(0, 'rgba(255,0,0,1.0)');
     gradient.addColorStop(0.1, 'rgba(255,0,15,0.7)');
     gradient.addColorStop(0.2, 'rgba(225,0,45,0.7)');
     gradient.addColorStop(0.3, 'rgba(195,0,75,0.5)');
