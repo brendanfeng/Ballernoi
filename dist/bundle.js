@@ -28409,7 +28409,7 @@ const addNBAListener = court => {
   const list = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-list");
   const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
 
-  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("../assets/player_data.csv", d => {
+  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("Ballernoi/assets/player_data.csv", d => {
       return {name: d.name, speed: +d.speed};
     })
     .then(data => {
