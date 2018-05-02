@@ -144,6 +144,11 @@ canvas {
     border-radius: 50%;
     background-color: rgb(247,188,136);
     cursor: pointer;
+    transition: 1s;
+}
+
+.slider::-webkit-slider-thumb:active {
+  background-color: white;
 }
 
 .slider::-moz-range-thumb {
@@ -152,6 +157,11 @@ canvas {
     border-radius: 50%;
     background: rgb(247,188,136);
     cursor: pointer;
+    transition: 1s;
+}
+
+.slider::-moz-range-thumb:active {
+  background-color: white;
 }
 
 #time-text {
@@ -223,4 +233,15 @@ dialog section {
   cursor: pointer;
   background-color: rgb(0,0,60);
   color: rgb(247,188,136);
+}
+
+.logos{
+  font-size: 36px;
+  color: rgb(247, 188, 136);
+  margin-right: 16px;
+  transition: color .5s;
+}
+
+.logos:hover {
+  color: white;
 }
