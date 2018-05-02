@@ -12,9 +12,9 @@ export default class Player {
     this.westbrook = new Image();
     this.davis = new Image();
 
-    this.harden.src = "Ballernoi/assets/harden.png";
-    this.westbrook.src = "Ballernoi/assets/westbrook.png";
-    this.davis.src = "Ballernoi/assets/davis.png";
+    this.harden.src = "assets/harden.png";
+    this.westbrook.src = "assets/westbrook.png";
+    this.davis.src = "assets/davis.png";
 
     this.updateSpeed = this.updateSpeed.bind(this);
     this.toggleSelect = this.toggleSelect.bind(this);

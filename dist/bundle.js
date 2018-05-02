@@ -28409,7 +28409,7 @@ const addNBAListener = court => {
   const list = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-list");
   const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
 
-  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("Ballernoi/assets/player_data.csv", d => {
+  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("assets/player_data.csv", d => {
       return {name: d.name, speed: +d.speed};
     })
     .then(data => {
@@ -28505,9 +28505,9 @@ class Player {
     this.westbrook = new Image();
     this.davis = new Image();
 
-    this.harden.src = "Ballernoi/assets/harden.png";
-    this.westbrook.src = "Ballernoi/assets/westbrook.png";
-    this.davis.src = "Ballernoi/assets/davis.png";
+    this.harden.src = "assets/harden.png";
+    this.westbrook.src = "assets/westbrook.png";
+    this.davis.src = "assets/davis.png";
 
     this.updateSpeed = this.updateSpeed.bind(this);
     this.toggleSelect = this.toggleSelect.bind(this);
