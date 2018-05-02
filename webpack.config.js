@@ -1,13 +1,13 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-  entry: './src/ballernoi.js',
+  entry: "./src/ballernoi.js",
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist")
   },
-  devtool: 'source-map',
+  devtool: "source-map",
   resolve: {
-  extensions: [".js", ".jsx", "*"]
-}
+    extensions: [".js", ".jsx", "*"]
+  }
 };

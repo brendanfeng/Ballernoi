@@ -1,6 +1,6 @@
-import * as d3 from 'd3';
-import Player from './player';
-import { calcPxDistance, vDiagram } from './calc';
+import * as d3 from "d3";
+import Player from "./player";
+import {calcPxDistance, vDiagram} from "./calc";
 
 export default class Court {
   constructor(canvas) {
@@ -9,16 +9,15 @@ export default class Court {
     this.height = canvas.height;
 
     this.time = 1000;
-    this.players =
-    [
+    this.players = [
       [0.35 * this.width, 0.5 * this.height],
       [0.65 * this.width, 0.5 * this.height],
       [0.2 * this.width, 0.8 * this.height],
       [0.5 * this.width, 0.8 * this.height],
       [0.8 * this.width, 0.8 * this.height]
-    ].map( (pos, i) => {
-      return new Player(pos, i); }
-    );
+    ].map((pos, i) => {
+      return new Player(pos, i);
+    });
 
     this.diagram = vDiagram(this);
 
@@ -45,10 +44,9 @@ export default class Court {
       let player = this.players[i];
       player.drawPlayer(this.context);
     }
-
   }
 
-  drawPoly (poly) {
+  drawPoly(poly) {
     this.context.beginPath();
     this.context.moveTo(poly[0][0], poly[0][1]);
     for (let i = 1, n = poly.length; i < n; ++i) {

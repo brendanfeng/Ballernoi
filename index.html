@@ -9,54 +9,76 @@
     <script src="./dist/bundle.js"></script>
   </head>
   <body>
-    <header id="title">
-      <span>Ballernoi</span>
+    <header>
+      <p id="title">Ballernoi</p>
+      <p id="open-voronoi" class="modalButton">What am I looking at?</p>
     </header>
     <main class="content">
       <div class="court">
-        <div id="container">
-        </div>
+        <div id="container"></div>
         <p id="scale">15 pixels = 1 foot</p>
       </div>
       <div class="menu">
+        <p id="open-menu" class="modalButton">What can I do?</p>
         <div class="player-menu">
           <div id="player-container">
-            <input type="text" placeholder= "Search NBA Players..." id="list-search">
-            <div id="player-list">
-            </div>
+            <input type="text" placeholder="Search NBA Players..." id="list-search">
+            <div id="player-list"></div>
           </div>
-          <input id="player-speed" type="number" step="0.001" value=""></input>
+          <div>
+            <p>Average speed (mph)</p>
+            <input id="player-speed" type="number" step="0.001" value=""></input>
+          </div>
         </div>
         <div class="slider-container">
           <p>Time Frame</p>
           <input id="coverage-time" class="slider" type="range" min="100" max="200" value="100"></input>
           <div id="time-text"></div>
         </div>
-        <p class="instructions" id="menu-explanation">
-          Click on a player from the court to edit their speed (in miles per hour).
-          You can either choose a NBA Player from the list or edit the speed directly.
-          Adjusting the time slider will show the distance covered within that time frame
-          (between 1 and 2 seconds).
-        </p>
       </div>
     </main>
     <footer class="explanation">
-      <p class="instructions" id="voronoi-explanation">
-        Welcome to Ballernoi! The basketball court that you see has been split up into a Voronoi
-        tessellation. Each small black circle represents a player playing defense, and each region is made up
-        of the set of points on the court that are closest to that player (relative to their teammates).
-        Each player also has a range of coverage, based on their average speed and represented by the gradient
-        around them. Check out how the weak points of the defenses change when you drag the players around,
-        change the time frame, or edit the players' speed.
-      </p>
-      <p class="instructions" id="data-explanation">
-        Data is from the 2015-2016 NBA season - more recent data is kept private by Second Spectrum, the NBA's
-        current partner for player tracking. Note that players' wingspans or defensive awareness have not been
-        taken into account, nor offensive players being obstacles to the defensive players' movements.
-      </p>
+      <p id="open-data" class="modalButton">What data was used?</p>
       <p class="contact-info">Made by Brendan Feng</p>
-      <div class="contact-info" id="logos">
-      </div>
+      <div class="contact-info" id="logos"></div>
     </footer>
+    <article>
+      <dialog id="data-explanation">
+        <section>
+          <p class="instructions">
+            Data is from the 2015-2016 NBA season - more recent data is kept private by Second Spectrum, the NBA's current partner for player tracking. Note that players' wingspans or defensive awareness have not been taken into account, nor offensive players
+            being obstacles to the defensive players' movements.
+          </p>
+          <p id="close-data" class="modalButton">Close</p>
+        </section>
+      </dialog>
+      <dialog id="voronoi-explanation">
+        <section>
+          <p class="instructions">
+            Welcome to Ballernoi! This is a visualization of an NBA defense - each image represents an individual player on a team. The basketball court that you see has been split up into a Voronoi tessellation, regions that are the set of points on the court
+            that are closest to each player relative to their teammates. The borders of the region are the points that are equidistant from two or more players - the points on defense that may lead to the most confusion between players.
+            <br>
+            <br>
+            Each player also has a range of coverage, based on their average speed and represented by the gradient around them. Areas that are bluer (or areas not covered at all) will take longer for players to get to.
+            <br>
+          </p>
+          <p id="close-voronoi" class="modalButton">Close</p>
+        </section>
+      </dialog>
+      <dialog id="menu-explanation">
+        <section>
+          <p class="instructions">
+            CLICK a player on the court to look at the player's statistics.
+            <br>
+            EDIT their speed manually or search through a list of NBA players.
+            <br>
+            DRAG the players around to see how their coverage changes.
+            <br>
+            SLIDE the time slider to show the distance covered within that time frame.
+          </p>
+          <p id="close-menu" class="modalButton">Close</p>
+        </section>
+      </dialog>
+    </article>
   </body>
 </html>

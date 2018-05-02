@@ -28157,17 +28157,29 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const vExplanation = document.getElementById("voronoi-explanation");
+  const vClose = document.getElementById("close-voronoi");
+  const vOpen = document.getElementById("open-voronoi");
+  const dataExplanation = document.getElementById("data-explanation");
+  const dataClose = document.getElementById("close-data");
+  const dataOpen = document.getElementById("open-data");
+  const menuExplanation = document.getElementById("menu-explanation");
+  const menuClose = document.getElementById("close-menu");
+  const menuOpen = document.getElementById("open-menu");
   const canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("#container")
-  .append("canvas")
-  .attr('width', 750)
-  .attr('height', 705);
+    .append("canvas")
+    .attr("width", 750)
+    .attr("height", 705);
   const court = new _court__WEBPACK_IMPORTED_MODULE_0__["default"](canvas.node());
-  const animate = (time) => {
+  const animate = time => {
     court.draw();
     requestAnimationFrame(animate);
   };
-  
+
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addModal"])(vExplanation, vClose, vOpen);
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addModal"])(dataExplanation, dataClose, dataOpen);
+  Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addModal"])(menuExplanation, menuClose, menuOpen);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addClickable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addDraggable"])(canvas, court);
   Object(_listeners__WEBPACK_IMPORTED_MODULE_2__["addNBAListener"])(court);
@@ -28199,23 +28211,31 @@ const calcPxDistance = (speed, time) => {
   return Math.floor(speed * 5280 / 3600 * 15 * time / 1000);
 };
 
-const vDiagram = (court) => {
+const vDiagram = court => {
   const voronoi = d3__WEBPACK_IMPORTED_MODULE_0__["voronoi"]().extent([[0, 0], [court.width, court.height]]);
-  const positions = court.players.map((player) => [player.x, player.y]);
+  const positions = court.players.map(player => [player.x, player.y]);
   const voronoiDiagram = voronoi(positions);
   return voronoiDiagram;
 };
 
 const clicked = (mousePos, player) => {
-  const distance = Math.sqrt((player.y - mousePos.y) ** 2 + (player.x - mousePos.x) ** 2);
-  return distance < 15
-}
+  const distance = Math.sqrt(
+    (player.y - mousePos.y) ** 2 + (player.x - mousePos.x) ** 2
+  );
+  return distance < 15;
+};
 
 const playerCollided = (currentPos, otherPlayer) => {
-  const distance = Math.sqrt((currentPos[0] - otherPlayer.x) ** 2 + (currentPos[1] - otherPlayer.y) ** 2);
-  const outsideBounds = currentPos[0] > 750 || currentPos[1] > 705 || currentPos[0] < 0 || currentPos[1] < 0;
+  const distance = Math.sqrt(
+    (currentPos[0] - otherPlayer.x) ** 2 + (currentPos[1] - otherPlayer.y) ** 2
+  );
+  const outsideBounds =
+    currentPos[0] > 750 ||
+    currentPos[1] > 705 ||
+    currentPos[0] < 0 ||
+    currentPos[1] < 0;
   return distance < 30 || outsideBounds;
-}
+};
 
 
 /***/ }),
@@ -28244,16 +28264,15 @@ class Court {
     this.height = canvas.height;
 
     this.time = 1000;
-    this.players =
-    [
+    this.players = [
       [0.35 * this.width, 0.5 * this.height],
       [0.65 * this.width, 0.5 * this.height],
       [0.2 * this.width, 0.8 * this.height],
       [0.5 * this.width, 0.8 * this.height],
       [0.8 * this.width, 0.8 * this.height]
-    ].map( (pos, i) => {
-      return new _player__WEBPACK_IMPORTED_MODULE_1__["default"](pos, i); }
-    );
+    ].map((pos, i) => {
+      return new _player__WEBPACK_IMPORTED_MODULE_1__["default"](pos, i);
+    });
 
     this.diagram = Object(_calc__WEBPACK_IMPORTED_MODULE_2__["vDiagram"])(this);
 
@@ -28280,10 +28299,9 @@ class Court {
       let player = this.players[i];
       player.drawPlayer(this.context);
     }
-
   }
 
-  drawPoly (poly) {
+  drawPoly(poly) {
     this.context.beginPath();
     this.context.moveTo(poly[0][0], poly[0][1]);
     for (let i = 1, n = poly.length; i < n; ++i) {
@@ -28308,11 +28326,12 @@ class Court {
 /*!**************************!*\
   !*** ./src/listeners.js ***!
   \**************************/
-/*! exports provided: addDraggable, addClickable, addSpeedListener, addTimeListener, addNBAListener */
+/*! exports provided: addModal, addDraggable, addClickable, addSpeedListener, addTimeListener, addNBAListener */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addModal", function() { return addModal; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addDraggable", function() { return addDraggable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addClickable", function() { return addClickable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addSpeedListener", function() { return addSpeedListener; });
@@ -28323,13 +28342,23 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const addModal = (dialog, closeButton, openButton) => {
+  closeButton.addEventListener("click", () => {
+    dialog.close();
+  });
+  openButton.addEventListener("click", () => {
+    dialog.showModal();
+  });
+};
+
 const addDraggable = (canvas, court) => {
-  canvas.call( d3__WEBPACK_IMPORTED_MODULE_0__["drag"]()
-    .subject(() => dragSubject(court))
-    .on("start", dragStart)
-    .on("drag", () => dragged(court))
-    .on("end", dragEnd)
-    .on("start.render drag.render end.render", court.draw)
+  canvas.call(
+    d3__WEBPACK_IMPORTED_MODULE_0__["drag"]()
+      .subject(() => dragSubject(court))
+      .on("start", dragStart)
+      .on("drag", () => dragged(court))
+      .on("end", dragEnd)
+      .on("start.render drag.render end.render", court.draw)
   );
 };
 
@@ -28352,11 +28381,11 @@ const addClickable = (canvas, court) => {
   });
 };
 
-const addSpeedListener = (court) => {
+const addSpeedListener = court => {
   const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
   speed.on("input", () => {
     d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
-    court.players.forEach( (player) => {
+    court.players.forEach(player => {
       if (player.id === +speed.attr("playerId")) {
         player.updateSpeed(court, d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value);
       }
@@ -28364,44 +28393,45 @@ const addSpeedListener = (court) => {
   });
 };
 
-const addTimeListener = (court) => {
+const addTimeListener = court => {
   const slider = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#coverage-time");
   const time = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#time-text");
-  time.html((slider.property("value") / 100) + " sec");
-  slider.on('input', () => {
+  time.html(slider.property("value") / 100 + " sec");
+  slider.on("input", () => {
     d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
     time.html(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value / 100 + " sec");
     court.updateTime(d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value * 10);
   });
 };
 
-const addNBAListener = (court) => {
+const addNBAListener = court => {
   const search = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#list-search");
   const list = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-list");
   const speed = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
 
-  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("/Ballernoi/assets/player_data.csv", (d) => {
-    return { name: d.name, speed: +d.speed };
-  }).then((data) => {
-    data.forEach((player) => {
-    list.append('div')
-      .classed('player-name', true)
-      .html(player.name)
-      .on('click', () => {
-        d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
-        speed.property('value', player.speed);
-        court.players.forEach((p) => {
-          if (p.id === +speed.attr("playerId")) {
-            p.updateSpeed(court, player.speed);
-          }
-        });
+  d3__WEBPACK_IMPORTED_MODULE_0__["csv"]("../assets/player_data.csv", d => {
+      return {name: d.name, speed: +d.speed};
+    })
+    .then(data => {
+      data.forEach(player => {
+        list
+          .append("div")
+          .classed("player-name", true)
+          .html(player.name)
+          .on("click", () => {
+            d3__WEBPACK_IMPORTED_MODULE_0__["event"].preventDefault();
+            speed.property("value", player.speed);
+            court.players.forEach(p => {
+              if (p.id === +speed.attr("playerId")) {
+                p.updateSpeed(court, player.speed);
+              }
+            });
+          });
       });
     });
-  });
 
   search.on("input", () => {
-    d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"](".player-name")
-    .style('display', function() {
+    d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"](".player-name").style("display", function() {
       const query = d3__WEBPACK_IMPORTED_MODULE_0__["event"].target.value.toUpperCase();
       if (this.innerHTML.toUpperCase().indexOf(query) > -1) {
         return "";
@@ -28412,7 +28442,7 @@ const addNBAListener = (court) => {
   });
 };
 
-const dragSubject = (court) => {
+const dragSubject = court => {
   let subject, i, n, player, site;
   for (i = 0, n = court.players.length; i < n; ++i) {
     player = court.players[i];
@@ -28429,17 +28459,21 @@ const dragStart = () => {
   d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.active = true;
 };
 
-const dragged = (court) => {
+const dragged = court => {
   const subjectIdx = court.players.indexOf(d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject);
   const otherPlayers = Array.from(court.players);
   otherPlayers.splice(subjectIdx, 1);
-    if (otherPlayers.every((currentValue) => !Object(_calc__WEBPACK_IMPORTED_MODULE_1__["playerCollided"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], currentValue))) {
-      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
-      d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
-    }
+  if (
+    otherPlayers.every(
+      currentValue => !Object(_calc__WEBPACK_IMPORTED_MODULE_1__["playerCollided"])([d3__WEBPACK_IMPORTED_MODULE_0__["event"].x, d3__WEBPACK_IMPORTED_MODULE_0__["event"].y], currentValue)
+    )
+  ) {
+    d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.x = d3__WEBPACK_IMPORTED_MODULE_0__["event"].x;
+    d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.y = d3__WEBPACK_IMPORTED_MODULE_0__["event"].y;
+  }
 };
 
-const dragEnd =() => {
+const dragEnd = () => {
   d3__WEBPACK_IMPORTED_MODULE_0__["event"].subject.active = false;
 };
 
@@ -28463,7 +28497,7 @@ class Player {
   constructor(pos, id) {
     this.x = pos[0];
     this.y = pos[1];
-    this.speed = 4.000;
+    this.speed = 4.0;
     this.id = id;
     this.clickedOn = false;
 
@@ -28471,16 +28505,16 @@ class Player {
     this.westbrook = new Image();
     this.davis = new Image();
 
-    this.harden.src = "/Ballernoi/assets/harden.png";
-    this.westbrook.src = "/Ballernoi/assets/westbrook.png";
-    this.davis.src = "/Ballernoi/assets/davis.png";
+    this.harden.src = "../assets/harden.png";
+    this.westbrook.src = "../assets/westbrook.png";
+    this.davis.src = "../assets/davis.png";
 
     this.updateSpeed = this.updateSpeed.bind(this);
     this.toggleSelect = this.toggleSelect.bind(this);
     this.openMenu = this.openMenu.bind(this);
   }
 
-  drawPlayer (ctx) {
+  drawPlayer(ctx) {
     let img;
     if (this.speed <= 4) {
       img = this.harden;
@@ -28490,9 +28524,9 @@ class Player {
       img = this.davis;
     }
     ctx.beginPath();
-    ctx.drawImage(img, this.x-8, this.y-15);
+    ctx.drawImage(img, this.x - 8, this.y - 15);
     if (this.clickedOn) {
-      ctx.arc(this.x, this.y, 15, 0, 2*Math.PI);
+      ctx.arc(this.x, this.y, 15, 0, 2 * Math.PI);
       ctx.lineWidth = 1;
       ctx.strokeStyle = "rgb(255,255,255)";
     }
@@ -28501,36 +28535,43 @@ class Player {
     ctx.closePath();
   }
 
-  drawRange (ctx, r) {
-    const gradient = ctx.createRadialGradient(this.x, this.y, 15, this.x, this.y, r);
-    gradient.addColorStop(0, 'rgba(255,0,0,1.0)');
-    gradient.addColorStop(0.1, 'rgba(255,0,15,0.7)');
-    gradient.addColorStop(0.2, 'rgba(225,0,45,0.7)');
-    gradient.addColorStop(0.3, 'rgba(195,0,75,0.5)');
-    gradient.addColorStop(0.4, 'rgba(165,0,105,0.5)');
-    gradient.addColorStop(0.5, 'rgba(135,0,135,0.5)');
-    gradient.addColorStop(0.6, 'rgba(105,0,165,0.5)');
-    gradient.addColorStop(0.7, 'rgba(75,0,195,0.4)');
-    gradient.addColorStop(0.8, 'rgba(45,0,225,0.4)');
-    gradient.addColorStop(0.9, 'rgba(0,0,255,0.4)');
-    gradient.addColorStop(1, 'rgba(0,0,255,0.4)');
+  drawRange(ctx, r) {
+    const gradient = ctx.createRadialGradient(
+      this.x,
+      this.y,
+      15,
+      this.x,
+      this.y,
+      r
+    );
+    gradient.addColorStop(0, "rgba(255,0,0,1.0)");
+    gradient.addColorStop(0.1, "rgba(255,0,15,0.7)");
+    gradient.addColorStop(0.2, "rgba(225,0,45,0.7)");
+    gradient.addColorStop(0.3, "rgba(195,0,75,0.5)");
+    gradient.addColorStop(0.4, "rgba(165,0,105,0.5)");
+    gradient.addColorStop(0.5, "rgba(135,0,135,0.5)");
+    gradient.addColorStop(0.6, "rgba(105,0,165,0.5)");
+    gradient.addColorStop(0.7, "rgba(75,0,195,0.4)");
+    gradient.addColorStop(0.8, "rgba(45,0,225,0.4)");
+    gradient.addColorStop(0.9, "rgba(0,0,255,0.4)");
+    gradient.addColorStop(1, "rgba(0,0,255,0.4)");
     ctx.beginPath();
     ctx.moveTo(this.x + r, this.y);
     ctx.arc(this.x, this.y, r, 0, 2 * Math.PI);
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+    ctx.strokeStyle = "rgba(255,0,0,0.2)";
     ctx.stroke();
     ctx.fillStyle = gradient;
     ctx.fill();
     ctx.closePath();
   }
 
-  updateSpeed (court, speed) {
+  updateSpeed(court, speed) {
     this.speed = speed;
     court.draw();
   }
 
-  toggleSelect () {
+  toggleSelect() {
     if (this.clickedOn) {
       this.clickedOn = false;
     } else {
@@ -28538,17 +28579,17 @@ class Player {
     }
   }
 
-  openMenu () {
+  openMenu() {
     const menu = d3__WEBPACK_IMPORTED_MODULE_0__["select"](".player-menu");
     const input = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#player-speed");
-    input.attr('playerId', this.id);
+    input.attr("playerId", this.id);
     input.property("value", this.speed);
-    menu.classed('show', true);
+    menu.classed("show", true);
   }
 
-  closeMenu () {
+  closeMenu() {
     const menu = d3__WEBPACK_IMPORTED_MODULE_0__["select"](".player-menu");
-    menu.classed('show', null);
+    menu.classed("show", null);
   }
 }
 
